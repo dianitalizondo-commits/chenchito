@@ -24,7 +24,7 @@
       cursor: default; /* no longer clickable */
       border-radius: 10px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      transition: transform 0.5s ease;
+      transition: transform 0.5s ease, opacity 0.4s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -91,7 +91,7 @@
     .music { margin-top: 15px; }
     button { background: var(--pink-1); border: none; padding: 10px 15px; color: white; border-radius: 20px; cursor: pointer; }
 
-    .confetti-container{ position: fixed; pointer-events: none; inset: 0; overflow: visible; z-index: 9999; }
+    .confetti-container{ position: fixed; pointer-events: none; inset: 0; overflow: visible; z-index: 9999; transition: opacity 0.4s ease; }
     .confetti{ position: absolute; font-size: 18px; opacity: 0.95; transform-origin: center; will-change: transform, opacity; animation: confettiFall linear forwards; text-shadow: 0 1px 0 rgba(0,0,0,0.05); }
     @keyframes confettiFall{ to { transform: translateY(110vh) rotate(720deg) translateX(40px); opacity: 0; } }
 
@@ -130,7 +130,7 @@
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    console.log('[chenchito] script loaded (typing)');
+    console.log('[chenchito] script loaded (auto-hide envelope)');
 
     function spawnConfetti(count = 24) {
       const container = document.getElementById('confetti');
@@ -221,7 +221,7 @@ cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI 
 
     function openEnvelope() {
       try {
-        console.log('[chenchito] openEnvelope called (typing)');
+        console.log('[chenchito] openEnvelope called (auto-hide)');
         const envelope = document.getElementById('envelope');
         const card = document.getElementById('card');
         const messageEl = document.getElementById('message');
@@ -229,7 +229,9 @@ cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI 
         if (envelope.classList.contains('open')) return;
         envelope.classList.add('open');
         envelope.setAttribute('aria-pressed', 'true');
+        // spawn confetti
         spawnConfetti(32);
+
         setTimeout(() => {
           if (card) { card.classList.add('show'); card.setAttribute('aria-hidden', 'false'); }
           // start typing
@@ -240,6 +242,19 @@ cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI 
             shouldPlayWhenReady = true;
           }
         }, 700);
+
+        // hide envelope + confetti after a short delay so only message+music remain
+        setTimeout(() => {
+          try {
+            // fade out envelope
+            envelope.style.opacity = '0';
+            setTimeout(() => { envelope.style.display = 'none'; }, 450);
+            // fade out confetti container
+            const conf = document.getElementById('confetti');
+            if (conf) { conf.style.opacity = '0'; setTimeout(() => { conf.style.display = 'none'; }, 450); }
+          } catch (e) { console.error('[chenchito] hide envelope error', e); }
+        }, 2000);
+
         const playButtonEl = document.getElementById('playButton');
         if (playButtonEl && !playButtonEl._chenchito_attached) {
           playButtonEl.addEventListener('click', playToggle);
