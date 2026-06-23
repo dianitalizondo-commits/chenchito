@@ -84,6 +84,10 @@
     .card.show { display: block; animation: fadeScale 600ms ease forwards; }
     @keyframes fadeScale{ from {opacity:0; transform: scale(.96) translateY(8px);} to {opacity:1; transform: scale(1) translateY(0);} }
 
+    .message { margin: 8px 0; min-height: 6em; white-space: pre-wrap; text-align: left; }
+    .cursor { display: inline-block; width: 1ch; animation: blink 800ms steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0 } }
+
     .music { margin-top: 15px; }
     button { background: var(--pink-1); border: none; padding: 10px 15px; color: white; border-radius: 20px; cursor: pointer; }
 
@@ -104,19 +108,13 @@
     <div class="envelope" id="envelope" aria-pressed="false" aria-label="Sobre">
       <div class="letter" aria-hidden="true">
         <div class="title">Para mi chechito 💖</div>
-        <!-- Texto interactivo eliminado para apertura automática -->
       </div>
     </div>
 
     <div class="card" id="card" aria-hidden="true">
       <h2>11 meses contigo 💕</h2>
 
-      <p>
-        hola mi niño como estas? ❤️
-        hoy celebramos 11 meses juntos de mucho amor y un poquito de estres jijiji mentira mi vida ud sabe que yo lo amo con todo mi corazoncito ❤️
-        gracias por llegar a mi vida y hacerla mas bonita😍
-        cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI CHENCHITO❤️😍
-      </p>
+      <p id="message" class="message" aria-live="polite" aria-atomic="true"></p>
 
       <div class="music">
         🎶 Sonando: Dando Vueltas - Kid Voodoo
@@ -132,7 +130,7 @@
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    console.log('[chenchito] script loaded (auto-open)');
+    console.log('[chenchito] script loaded (typing)');
 
     function spawnConfetti(count = 24) {
       const container = document.getElementById('confetti');
@@ -189,11 +187,44 @@
       } catch (e) { console.error('[chenchito] playToggle error', e); }
     }
 
+    // Typing effect
+    const FULL_MESSAGE = `hola mi niño como estas? ❤️
+hoy celebramos 11 meses juntos de mucho amor y un poquito de estres jijiji mentira mi vida ud sabe que yo lo amo con todo mi corazoncito ❤️
+gracias por llegar a mi vida y hacerla mas bonita😍
+cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI CHENCHITO❤️😍`;
+
+    function typeText(el, text, speed = 30) {
+      el.textContent = '';
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      cursor.textContent = '|';
+      el.appendChild(cursor);
+      let i = 0;
+      function tick() {
+        if (i < text.length) {
+          // insert before cursor
+          cursor.insertAdjacentText('beforebegin', text.charAt(i));
+          i++;
+          // variable delay for commas/periods/newlines for natural rhythm
+          let delay = speed;
+          const ch = text.charAt(i-1);
+          if (ch === ',' ) delay = speed * 8;
+          if (ch === '.' ) delay = speed * 12;
+          if (ch === '\n') delay = speed * 18;
+          setTimeout(tick, delay);
+        } else {
+          cursor.remove();
+        }
+      }
+      tick();
+    }
+
     function openEnvelope() {
       try {
-        console.log('[chenchito] openEnvelope called (auto)');
+        console.log('[chenchito] openEnvelope called (typing)');
         const envelope = document.getElementById('envelope');
         const card = document.getElementById('card');
+        const messageEl = document.getElementById('message');
         if (!envelope) return;
         if (envelope.classList.contains('open')) return;
         envelope.classList.add('open');
@@ -201,6 +232,8 @@
         spawnConfetti(32);
         setTimeout(() => {
           if (card) { card.classList.add('show'); card.setAttribute('aria-hidden', 'false'); }
+          // start typing
+          if (messageEl) typeText(messageEl, FULL_MESSAGE, 28);
           if (player && typeof player.playVideo === 'function') {
             player.playVideo();
           } else {
