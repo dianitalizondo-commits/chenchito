@@ -30,10 +30,7 @@
       pointer-events: none;
     }
 
-    @keyframes float {
-      from {background-position: 0 0;}
-      to {background-position: 0 -1000px;}
-    }
+    @keyframes float { from {background-position: 0 0;} to {background-position: 0 -1000px;} }
 
     .container {
       display: flex;
@@ -100,21 +97,10 @@
     }
 
     /* flap 3D when open */
-    .envelope.open:before {
-      transform: rotateX(-180deg) translateZ(0);
-    }
+    .envelope.open:before { transform: rotateX(-180deg) translateZ(0); }
+    .envelope.open .letter { transform: translateY(-80px); opacity: 1; }
 
-    .envelope.open .letter {
-      transform: translateY(-80px);
-      opacity: 1;
-    }
-
-    .title {
-      text-align: center;
-      color: var(--pink-1);
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
+    .title { text-align: center; color: var(--pink-1); font-weight: bold; margin-bottom: 6px; }
 
     .gallery { display:none; }
 
@@ -133,54 +119,23 @@
     }
 
     /* show animation: fade + scale */
-    .card.show {
-      display: block;
-      animation: fadeScale 600ms ease forwards;
-    }
-
-    @keyframes fadeScale{
-      from {opacity:0; transform: scale(.96) translateY(8px);} 
-      to {opacity:1; transform: scale(1) translateY(0);} 
-    }
+    .card.show { display: block; animation: fadeScale 600ms ease forwards; }
+    @keyframes fadeScale{ from {opacity:0; transform: scale(.96) translateY(8px);} to {opacity:1; transform: scale(1) translateY(0);} }
 
     .music { margin-top: 15px; }
-
-    button {
-      background: var(--pink-1);
-      border: none;
-      padding: 10px 15px;
-      color: white;
-      border-radius: 20px;
-      cursor: pointer;
-    }
+    button { background: var(--pink-1); border: none; padding: 10px 15px; color: white; border-radius: 20px; cursor: pointer; }
 
     /* Confetti hearts */
-    .confetti-container{
-      position: fixed;
-      pointer-events: none;
-      inset: 0;
-      overflow: visible;
-      z-index: 9999;
-    }
-    .confetti{
-      position: absolute;
-      font-size: 18px;
-      opacity: 0.95;
-      transform-origin: center;
-      will-change: transform, opacity;
-      animation: confettiFall linear forwards;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.05);
-    }
-    @keyframes confettiFall{
-      to { transform: translateY(110vh) rotate(720deg) translateX(40px); opacity: 0; }
-    }
+    .confetti-container{ position: fixed; pointer-events: none; inset: 0; overflow: visible; z-index: 9999; }
+    .confetti{ position: absolute; font-size: 18px; opacity: 0.95; transform-origin: center; will-change: transform, opacity; animation: confettiFall linear forwards; text-shadow: 0 1px 0 rgba(0,0,0,0.05); }
+    @keyframes confettiFall{ to { transform: translateY(110vh) rotate(720deg) translateX(40px); opacity: 0; } }
+
+    /* Video player responsive */
+    .player-wrap{ width: 100%; max-width: 560px; margin: 12px auto 0; aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }
+    .player-wrap iframe{ width:100%; height:100%; border:0; }
 
     /* pequeño ajuste responsivo */
-    @media (max-width: 420px) {
-      .envelope { width: 90%; height: 180px; }
-      .letter { width: calc(100% - 40px); }
-      .card { width: 90%; }
-    }
+    @media (max-width: 420px) { .envelope { width: 90%; height: 180px; } .letter { width: calc(100% - 40px); } .card { width: 90%; } }
   </style>
 </head>
 
@@ -209,16 +164,18 @@
       <div class="music">
         🎶 Sonando: Dando Vueltas - Kid Voodoo
         <br /><br />
-        <button id="playButton">▶ Reproducir música</button>
+        <button id="playButton">▶ Reproducir / Pausar música</button>
       </div>
 
-      <audio id="audio" preload="none">
-        <source src="tu-musica.mp3" type="audio/mpeg" />
-        Tu navegador no soporta audio.
-      </audio>
+      <div class="player-wrap" id="player-wrap" aria-hidden="false">
+        <!-- YouTube player will be inserted here -->
+        <div id="ytplayer"></div>
+      </div>
     </div>
   </div>
 
+  <!-- Load YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     // Confetti generator: small hearts falling
     function spawnConfetti(count = 24) {
@@ -233,10 +190,9 @@
         el.style.opacity = (0.7 + Math.random()*0.3);
         el.style.color = colors[Math.floor(Math.random()*colors.length)];
         el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
-        const delay = Math.random() * 300;
         const duration = 3000 + Math.random()*2200;
         el.style.animationDuration = duration + 'ms';
-        el.style.left = (20 + Math.random() * 60) + 'vw';
+        el.style.left = (10 + Math.random() * 80) + 'vw';
         el.textContent = '💖';
         container.appendChild(el);
         // cleanup
@@ -244,11 +200,40 @@
       }
     }
 
+    // YouTube Player setup
+    let player;
+    let shouldPlayWhenReady = false;
+    const PLAYLIST_ID = 'OLAK5uy_lCgphghiACf86_5tTRvfuXve_loR7Llfs';
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('ytplayer', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          listType: 'playlist',
+          list: PLAYLIST_ID,
+          autoplay: 0,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0
+        },
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      if (shouldPlayWhenReady && player && player.playVideo) {
+        player.playVideo();
+        shouldPlayWhenReady = false;
+      }
+    }
+
     // Abre el sobre y muestra la tarjeta con animaciones
     function openEnvelope() {
       const envelope = document.getElementById('envelope');
       const card = document.getElementById('card');
-      const audio = document.getElementById('audio');
       const playButton = document.getElementById('playButton');
 
       if (envelope.classList.contains('open')) return; // idempotent
@@ -262,18 +247,26 @@
       setTimeout(() => {
         card.classList.add('show');
         card.setAttribute('aria-hidden', 'false');
-        // try autoplay after user interaction (click)
-        if (audio) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {
-            // autoplay may be blocked; leave the manual button
-            // enable playButton to start playback
-          });
+        // try to autoplay the YouTube playlist after the user interaction
+        if (player && player.playVideo) {
+          player.playVideo();
+        } else {
+          shouldPlayWhenReady = true; // play when API ready
         }
       }, 700);
 
-      // reproducir al pulsar el botón (idempotent listener)
-      const playHandler = () => { audio.play().catch(()=>{}); };
+      // reproducir/pausar al pulsar el botón
+      const playHandler = () => {
+        if (!player) return;
+        const state = player.getPlayerState();
+        // states: -1 (unstarted), 0 ended, 1 playing, 2 paused
+        if (state === YT.PlayerState.PLAYING) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
+      };
+
       playButton.removeEventListener('click', playHandler);
       playButton.addEventListener('click', playHandler);
 
@@ -289,11 +282,7 @@
 
     // Attach click and keyboard listeners
     document.getElementById('envelope').addEventListener('click', openEnvelope);
-
-    // Accessibility: allow focus + Enter key on page load if wanted
-    document.getElementById('envelope').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') openEnvelope();
-    });
+    document.getElementById('envelope').addEventListener('keypress', (e) => { if (e.key === 'Enter') openEnvelope(); });
   </script>
 </body>
 </html>
