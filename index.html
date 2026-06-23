@@ -21,7 +21,7 @@
       height: 200px;
       background: var(--pink-1);
       position: relative;
-      cursor: pointer;
+      cursor: default; /* no longer clickable */
       border-radius: 10px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
       transition: transform 0.5s ease;
@@ -101,10 +101,10 @@
   <div class="confetti-container" id="confetti"></div>
 
   <div class="container">
-    <div class="envelope" id="envelope" role="button" aria-pressed="false" tabindex="0" aria-label="Abrir sobre">
+    <div class="envelope" id="envelope" aria-pressed="false" aria-label="Sobre">
       <div class="letter" aria-hidden="true">
         <div class="title">Para mi chechito 💖</div>
-        <p>Haz clic para abrir 💌</p>
+        <!-- Texto interactivo eliminado para apertura automática -->
       </div>
     </div>
 
@@ -132,7 +132,7 @@
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    console.log('[chenchito] script loaded (fix/flap-zindex)');
+    console.log('[chenchito] script loaded (auto-open)');
 
     function spawnConfetti(count = 24) {
       const container = document.getElementById('confetti');
@@ -191,7 +191,7 @@
 
     function openEnvelope() {
       try {
-        console.log('[chenchito] openEnvelope called');
+        console.log('[chenchito] openEnvelope called (auto)');
         const envelope = document.getElementById('envelope');
         const card = document.getElementById('card');
         if (!envelope) return;
@@ -212,17 +212,12 @@
           playButtonEl.addEventListener('click', playToggle);
           playButtonEl._chenchito_attached = true;
         }
-        const keyHandler = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEnvelope(); } };
-        envelope.addEventListener('keydown', keyHandler, { once: true });
       } catch (e) { console.error('[chenchito] openEnvelope failure', e); }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const env = document.getElementById('envelope');
-      if (env) {
-        env.addEventListener('click', openEnvelope);
-        env.addEventListener('keypress', (e) => { if (e.key === 'Enter') openEnvelope(); });
-      }
+      // Open automatically shortly after the page loads
+      setTimeout(() => { openEnvelope(); }, 600);
     });
   </script>
 </body>
