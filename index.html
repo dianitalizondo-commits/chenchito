@@ -5,11 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Para mi chechito 💖</title>
   <style>
+    :root{
+      --pink-1:#ff4d6d;
+      --pink-2:#ff758f;
+      --card-bg:#ffe3ea;
+    }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
         Arial;
       background: linear-gradient(180deg, #fff5f7 0%, #fffafa 100%);
+      overflow-x: hidden;
     }
 
     .hearts {
@@ -17,19 +23,16 @@
       width: 100%;
       height: 100%;
       /* FONDO DE CORAZONES SEGURO Y BONITO */
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 10 C15 0 0 0 0 10 C0 15 20 25 20 30 C20 25 40 15 40 10 C40 0 25 0 20 10' fill='%23ff4757' fill-opacity='0.1'/%3E%3C/svg%3E") repeat;
-      opacity: 0.8; /* Ajusta la visibilidad */
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 10 C15 0 0 0 0 10 C0 15 20 25 20 30 C20 25 40 15 40 10 C40 0 25 0 20 10' fill='%23ff4757' fill-opacity='0.08'/%3E%3C/svg%3E") repeat;
+      opacity: 0.7; /* Ajusta la visibilidad */
       animation: float 15s infinite linear; /* Un poco más lento */
       z-index: -1; /* Para que esté detrás de todo */
+      pointer-events: none;
     }
 
     @keyframes float {
-      from {
-        background-position: 0 0;
-      }
-      to {
-        background-position: 0 -1000px;
-      }
+      from {background-position: 0 0;}
+      to {background-position: 0 -1000px;}
     }
 
     .container {
@@ -41,13 +44,14 @@
       gap: 18px;
       padding: 20px;
       box-sizing: border-box;
+      perspective: 1000px; /* para 3D */
     }
 
     /* SOBRE */
     .envelope {
       width: 320px;
       height: 200px;
-      background: #ff4d6d;
+      background: var(--pink-1);
       position: relative;
       cursor: pointer;
       border-radius: 10px;
@@ -56,22 +60,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;
+      transform-origin: center;
     }
 
     .envelope:before {
       content: "";
       position: absolute;
-      top: 0;
+      top: -2px;
       left: 0;
-      width: 0;
-      height: 0;
-      border-left: 160px solid transparent;
-      border-right: 160px solid transparent;
-      border-top: 120px solid #ff758f;
-      transform-origin: top;
-      transition: transform 0.5s ease;
-      z-index: 2;
+      width: 100%;
+      height: 60%;
+      background: linear-gradient(180deg, var(--pink-2) 0%, var(--pink-1) 100%);
+      transform-origin: 50% 0%;
+      transform-style: preserve-3d;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      transition: transform 0.8s cubic-bezier(.2,.9,.2,1);
+      z-index: 3;
+      pointer-events: none;
     }
 
     .letter {
@@ -92,37 +99,29 @@
       overflow: hidden;
     }
 
+    /* flap 3D when open */
+    .envelope.open:before {
+      transform: rotateX(-180deg) translateZ(0);
+    }
+
     .envelope.open .letter {
       transform: translateY(-80px);
       opacity: 1;
     }
 
-    .envelope.open:before {
-      transform: rotateX(180deg);
-    }
-
     .title {
       text-align: center;
-      color: #ff4d6d;
+      color: var(--pink-1);
       font-weight: bold;
       margin-bottom: 6px;
     }
 
-    .gallery {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-    }
-
-    .gallery img {
-      width: 45%;
-      border-radius: 10px;
-    }
+    .gallery { display:none; }
 
     /* TARJETA FINAL */
     .card {
       display: none;
-      background: #ffe3ea;
+      background: var(--card-bg);
       color: #333;
       padding: 20px;
       border-radius: 15px;
@@ -130,14 +129,24 @@
       text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
       margin-top: 10px;
+      transform-origin: center;
     }
 
-    .music {
-      margin-top: 15px;
+    /* show animation: fade + scale */
+    .card.show {
+      display: block;
+      animation: fadeScale 600ms ease forwards;
     }
+
+    @keyframes fadeScale{
+      from {opacity:0; transform: scale(.96) translateY(8px);} 
+      to {opacity:1; transform: scale(1) translateY(0);} 
+    }
+
+    .music { margin-top: 15px; }
 
     button {
-      background: #ff4d6d;
+      background: var(--pink-1);
       border: none;
       padding: 10px 15px;
       color: white;
@@ -145,27 +154,42 @@
       cursor: pointer;
     }
 
+    /* Confetti hearts */
+    .confetti-container{
+      position: fixed;
+      pointer-events: none;
+      inset: 0;
+      overflow: visible;
+      z-index: 9999;
+    }
+    .confetti{
+      position: absolute;
+      font-size: 18px;
+      opacity: 0.95;
+      transform-origin: center;
+      will-change: transform, opacity;
+      animation: confettiFall linear forwards;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.05);
+    }
+    @keyframes confettiFall{
+      to { transform: translateY(110vh) rotate(720deg) translateX(40px); opacity: 0; }
+    }
+
     /* pequeño ajuste responsivo */
     @media (max-width: 420px) {
-      .envelope {
-        width: 90%;
-        height: 180px;
-      }
-      .letter {
-        width: calc(100% - 40px);
-      }
-      .card {
-        width: 90%;
-      }
+      .envelope { width: 90%; height: 180px; }
+      .letter { width: calc(100% - 40px); }
+      .card { width: 90%; }
     }
   </style>
 </head>
 
 <body>
   <div class="hearts" aria-hidden="true"></div>
+  <div class="confetti-container" id="confetti"></div>
 
   <div class="container">
-    <div class="envelope" id="envelope" onclick="openEnvelope()" role="button" aria-pressed="false" tabindex="0">
+    <div class="envelope" id="envelope" role="button" aria-pressed="false" tabindex="0" aria-label="Abrir sobre">
       <div class="letter" aria-hidden="true">
         <div class="title">Para mi chechito 💖</div>
         <p>Haz clic para abrir 💌</p>
@@ -196,36 +220,80 @@
   </div>
 
   <script>
-    // Abre el sobre y muestra la tarjeta
-    function openEnvelope() {
-      const envelope = document.getElementById("envelope");
-      const card = document.getElementById("card");
-      const audio = document.getElementById("audio");
-      const playButton = document.getElementById("playButton");
+    // Confetti generator: small hearts falling
+    function spawnConfetti(count = 24) {
+      const container = document.getElementById('confetti');
+      const colors = ['#ff6b81','#ff7ab6','#ff8fb3','#ffd1e0','#ff95a3'];
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.style.left = (Math.random() * 100) + 'vw';
+        el.style.top = (Math.random() * -10) + 'vh';
+        el.style.fontSize = (12 + Math.random()*18) + 'px';
+        el.style.opacity = (0.7 + Math.random()*0.3);
+        el.style.color = colors[Math.floor(Math.random()*colors.length)];
+        el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
+        const delay = Math.random() * 300;
+        const duration = 3000 + Math.random()*2200;
+        el.style.animationDuration = duration + 'ms';
+        el.style.left = (20 + Math.random() * 60) + 'vw';
+        el.textContent = '💖';
+        container.appendChild(el);
+        // cleanup
+        setTimeout(() => { el.remove(); }, duration + 800);
+      }
+    }
 
-      envelope.classList.add("open");
-      envelope.setAttribute("aria-pressed", "true");
+    // Abre el sobre y muestra la tarjeta con animaciones
+    function openEnvelope() {
+      const envelope = document.getElementById('envelope');
+      const card = document.getElementById('card');
+      const audio = document.getElementById('audio');
+      const playButton = document.getElementById('playButton');
+
+      if (envelope.classList.contains('open')) return; // idempotent
+
+      envelope.classList.add('open');
+      envelope.setAttribute('aria-pressed', 'true');
+
+      // spawn confetti
+      spawnConfetti(32);
 
       setTimeout(() => {
-        card.style.display = "block";
-        card.setAttribute("aria-hidden", "false");
-      }, 800);
+        card.classList.add('show');
+        card.setAttribute('aria-hidden', 'false');
+        // try autoplay after user interaction (click)
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch(() => {
+            // autoplay may be blocked; leave the manual button
+            // enable playButton to start playback
+          });
+        }
+      }, 700);
 
-      // reproducir al pulsar el botón
-      playButton.addEventListener("click", () => {
-        audio.play().catch(() => {
-          // manejo simple si el navegador bloquea la reproducción automática
-        });
-      });
+      // reproducir al pulsar el botón (idempotent listener)
+      const playHandler = () => { audio.play().catch(()=>{}); };
+      playButton.removeEventListener('click', playHandler);
+      playButton.addEventListener('click', playHandler);
 
       // permitir abrir con Enter o Space cuando el sobre tiene foco
-      envelope.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
+      const keyHandler = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           openEnvelope();
         }
-      }, { once: true });
+      };
+      envelope.addEventListener('keydown', keyHandler, { once: true });
     }
+
+    // Attach click and keyboard listeners
+    document.getElementById('envelope').addEventListener('click', openEnvelope);
+
+    // Accessibility: allow focus + Enter key on page load if wanted
+    document.getElementById('envelope').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') openEnvelope();
+    });
   </script>
 </body>
 </html>
