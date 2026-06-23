@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Para mi chechito 💖</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial;
+      background: linear-gradient(180deg, #fff5f7 0%, #fffafa 100%);
+    }
+
+    .hearts {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      /* FONDO DE CORAZONES SEGURO Y BONITO */
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 10 C15 0 0 0 0 10 C0 15 20 25 20 30 C20 25 40 15 40 10 C40 0 25 0 20 10' fill='%23ff4757' fill-opacity='0.1'/%3E%3C/svg%3E") repeat;
+      opacity: 0.8; /* Ajusta la visibilidad */
+      animation: float 15s infinite linear; /* Un poco más lento */
+      z-index: -1; /* Para que esté detrás de todo */
+    }
+
+    @keyframes float {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: 0 -1000px;
+      }
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      gap: 18px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* SOBRE */
+    .envelope {
+      width: 320px;
+      height: 200px;
+      background: #ff4d6d;
+      position: relative;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      transition: transform 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .envelope:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 160px solid transparent;
+      border-right: 160px solid transparent;
+      border-top: 120px solid #ff758f;
+      transform-origin: top;
+      transition: transform 0.5s ease;
+      z-index: 2;
+    }
+
+    .letter {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 280px;
+      height: 160px;
+      background: #fff;
+      color: #333;
+      padding: 12px;
+      border-radius: 10px;
+      transform: translateY(40px);
+      opacity: 0;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .envelope.open .letter {
+      transform: translateY(-80px);
+      opacity: 1;
+    }
+
+    .envelope.open:before {
+      transform: rotateX(180deg);
+    }
+
+    .title {
+      text-align: center;
+      color: #ff4d6d;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .gallery {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+
+    .gallery img {
+      width: 45%;
+      border-radius: 10px;
+    }
+
+    /* TARJETA FINAL */
+    .card {
+      display: none;
+      background: #ffe3ea;
+      color: #333;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      margin-top: 10px;
+    }
+
+    .music {
+      margin-top: 15px;
+    }
+
+    button {
+      background: #ff4d6d;
+      border: none;
+      padding: 10px 15px;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* pequeño ajuste responsivo */
+    @media (max-width: 420px) {
+      .envelope {
+        width: 90%;
+        height: 180px;
+      }
+      .letter {
+        width: calc(100% - 40px);
+      }
+      .card {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hearts" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="envelope" id="envelope" onclick="openEnvelope()" role="button" aria-pressed="false" tabindex="0">
+      <div class="letter" aria-hidden="true">
+        <div class="title">Para mi chechito 💖</div>
+        <p>Haz clic para abrir 💌</p>
+      </div>
+    </div>
+
+    <div class="card" id="card" aria-hidden="true">
+      <h2>11 meses contigo 💕</h2>
+
+      <p>
+        hola mi niño como estas? ❤️
+        hoy celebramos 11 meses juntos de mucho amor y un poquito de estres jijiji mentira mi vida ud sabe que yo lo amo con todo mi corazoncito ❤️
+        gracias por llegar a mi vida y hacerla mas bonita😍
+        cada dia a su lado es un regalo que valoro con todo mi cucharon LO AMO MUCHO MI CHENCHITO❤️😍
+      </p>
+
+      <div class="music">
+        🎶 Sonando: Dando Vueltas - Kid Voodoo
+        <br /><br />
+        <button id="playButton">▶ Reproducir música</button>
+      </div>
+
+      <audio id="audio" preload="none">
+        <source src="tu-musica.mp3" type="audio/mpeg" />
+        Tu navegador no soporta audio.
+      </audio>
+    </div>
+  </div>
+
+  <script>
+    // Abre el sobre y muestra la tarjeta
+    function openEnvelope() {
+      const envelope = document.getElementById("envelope");
+      const card = document.getElementById("card");
+      const audio = document.getElementById("audio");
+      const playButton = document.getElementById("playButton");
+
+      envelope.classList.add("open");
+      envelope.setAttribute("aria-pressed", "true");
+
+      setTimeout(() => {
+        card.style.display = "block";
+        card.setAttribute("aria-hidden", "false");
+      }, 800);
+
+      // reproducir al pulsar el botón
+      playButton.addEventListener("click", () => {
+        audio.play().catch(() => {
+          // manejo simple si el navegador bloquea la reproducción automática
+        });
+      });
+
+      // permitir abrir con Enter o Space cuando el sobre tiene foco
+      envelope.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openEnvelope();
+        }
+      }, { once: true });
+    }
+  </script>
+</body>
+</html>
